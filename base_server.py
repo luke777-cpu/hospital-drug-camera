@@ -76,6 +76,20 @@ def generate(data,key):
     request=Request('https://api.openai.com/v1/responses',data=json.dumps(payload).encode(),headers={'Authorization':'Bearer '+key,'Content-Type':'application/json'},method='POST')
     with urlopen(request,timeout=150) as response: return parse_response(json.load(response))
 
+def api_error(e):
+    # Show only diagnostic identifiers, never the request, image, key or raw error body.
+    fields={}
+    try:
+        error=json.loads(e.read(65536)).get('error',{})
+        if isinstance(error,dict):
+            for k in ('code','type','param'):
+                v=error.get(k)
+                if isinstance(v,str) and re.fullmatch(r'[A-Za-z0-9_.\[\]-]{1,120}',v):fields[k]=v
+    except Exception:pass
+    messages={400:'AI 요청 형식이 거부되었습니다.',401:'API 키가 유효하지 않습니다. 서버를 종료하고 키를 다시 입력하세요.',403:'이 키의 프로젝트 또는 모델 사용 권한을 확인하세요.',404:'요청한 모델을 사용할 수 없습니다.',413:'전송 용량 제한입니다. 사진을 줄여주세요.',429:'API 결제 잔액·사용 한도 또는 요청 제한을 확인하세요.',500:'AI 서비스 내부 오류입니다.',502:'AI 서비스 연결 오류입니다.',503:'AI 서비스가 일시적으로 요청을 처리하지 못했습니다.'}
+    details=' / '.join([f'HTTP {e.code}']+[f'{k}={v}' for k,v in fields.items()])
+    return messages.get(e.code,'AI 서비스가 오류를 반환했습니다.')+' ['+details+']'
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self,*args): pass  # No request or patient-content logging.
     def reply(self,status,data,kind='application/json; charset=utf-8'):
@@ -133,8 +147,7 @@ class Handler(BaseHTTPRequestHandler):
             data=json.loads(self.rfile.read(n));result=generate(data,self.server.api_key)
             self.reply(200,result)
         except HTTPError as e:
-            messages={401:'API 키가 유효하지 않습니다. 앱을 종료하고 키를 다시 입력하세요.',403:'이 키의 프로젝트 또는 모델 사용 권한을 확인하세요.',404:'모델을 사용할 수 없습니다. README의 모델 설정을 확인하세요.',429:'API 결제 잔액·사용 한도 또는 요청 제한을 확인하고 잠시 뒤 다시 시도하세요.'}
-            self.reply(502,{'error':messages.get(e.code,'OpenAI 응답 오류입니다. 잠시 후 다시 시도하세요.')})
+            self.reply(502,{'error':api_error(e)})
         except (TimeoutError,socket.timeout,URLError):self.reply(504,{'error':'OpenAI 연결 시간이 초과되었거나 연결할 수 없습니다. 인터넷을 확인하세요.'})
         except (ValueError,UnicodeError) as e:self.reply(400,{'error':str(e) if not isinstance(e,json.JSONDecodeError) else '입력 형식 오류'})
         except Exception:self.reply(500,{'error':'처리 중 오류가 발생했습니다. 앱을 다시 실행하세요.'})
