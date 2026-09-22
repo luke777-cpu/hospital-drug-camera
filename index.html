@@ -1,12 +1,12 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="session-token" content="__SESSION_TOKEN__"><title>본원 대체약 찾기</title><link rel="stylesheet" href="style.css"></head><body><main>
-<header><p>본원 약품 340종 · 의료진 검토용</p><h1>본원 대체약 찾기</h1><p>사진을 읽고, 성분을 확인하고, 후보만 살펴봅니다.</p></header>
+<header><p>본원 약품 340종 · 의료진 검토용</p><h1>본원 대체약 찾기</h1><p>동일 성분약을 먼저, 없으면 동일 계열 본원약을 보여줍니다.</p></header>
 <section><h2>1. 약 사진 또는 이름</h2><p>이름·주민번호 등 식별정보는 사진에서 잘라내세요. 판독 버튼을 누르면 사진 또는 입력 문구와 본원 약품 목록을 OpenAI에 전송합니다.</p>
 <div class="buttons"><label class="button">카메라로 촬영<input id="camera" type="file" accept="image/*" capture="environment" hidden></label><label class="button secondary">사진 선택<input id="album" type="file" accept="image/*" hidden></label></div>
 <img id="preview" hidden alt="전송할 약 사진"><button id="clearPhoto" hidden class="secondary">사진 지우기</button>
 <label for="input">약 이름 직접 입력 (한 줄에 한 약)</label><textarea id="input" placeholder="약 이름과 함량을 입력하세요"></textarea>
 <label><input type="checkbox" id="consent"> 전송할 자료를 확인했습니다.</label>
 <div class="buttons"><button id="read">AI로 약 목록 읽기</button><button id="manual" class="secondary">AI 없이 본원 목록 검색</button></div><p id="status" role="status" aria-live="polite"></p></section>
-<section id="verify" hidden><h2>2. 판독 확인</h2><p>성분은 AI 추정이 포함됩니다. 원문·허가사항과 대조하고 틀린 내용은 고쳐주세요. 수정한 행의 기존 AI 대체 후보는 제외됩니다.</p><div id="rows"></div><button id="add" class="secondary">+ 약 추가</button><p><label><input id="checked" type="checkbox"> 약 이름·성분·함량을 대조했습니다.</label></p><button id="match">후보 목록 보기</button></section>
-<section id="search" hidden><h2>본원 목록 검색</h2><p>검색 결과는 대체 가능 판정이 아닙니다.</p><input id="query" placeholder="약 이름 또는 성분 검색"><div id="searchResults"></div></section>
-<section id="results" hidden><h2>3. 본원 후보 목록</h2><p>동일 성분도 함량·제형·투여경로·방출형을 확인해야 합니다. 대체 후보는 AI 제안이며 임상적 동등성이나 교체 가능성이 검증된 목록이 아닙니다.</p><div id="resultList"></div><button id="reset" class="secondary">새 자료 입력</button></section>
-<footer>후보 목록만 제공합니다. 최종 선택과 처방은 의료진이 결정합니다.</footer></main><script src="app.js"></script></body></html>
+<section id="verify" hidden><h2>2. 판독 확인</h2><p>읽힌 이름·성분·계열을 확인하고 필요한 부분만 고쳐주세요.</p><div id="rows"></div><button id="add" class="secondary">+ 약 추가</button><button id="match">수정 내용으로 목록 갱신</button></section>
+<section id="search" hidden><h2>본원 목록 검색</h2><p>약 이름·성분 또는 PPI, 진통제 같은 계열로 검색하세요.</p><input id="query" placeholder="약 이름·성분·계열 검색 (예: PPI)"><div id="searchResults"></div></section>
+<section id="results" hidden><h2>3. 본원 후보 목록</h2><p>동일 성분이 있으면 해당 약을, 없으면 같은 계열의 본원 약을 모두 표시합니다.</p><div id="resultList"></div><button id="reset" class="secondary">새 자료 입력</button></section>
+<footer>후보 목록만 제공합니다. 최종 선택과 처방은 의료진이 결정합니다.</footer></main><script src="matcher.js"></script><script src="app.js"></script></body></html>

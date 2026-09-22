@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const m=require('./matcher.js');
+const list=m.enrich(require('./drugs.json'));
+const ppi=m.match({ingredient:'라베프라졸',family:'PPI'},list);
+assert.equal(ppi.same.length,0);
+assert.equal(ppi.related.length,3);
+assert.ok(ppi.related.some(d=>d.name.includes('에소메칸')));
+assert.ok(ppi.related.every(d=>d.family==='PPI'));
+const same=m.match({ingredient:'란소프라졸 15mg/정',family:'PPI'},list);
+assert.ok(same.same.some(d=>d.name.includes('란스톤')));
+assert.equal(same.related.length,0);
+assert.equal(m.search('PPI',list).length,3);
+assert.ok(m.search('진통제',list).length>3);
+assert.notEqual(m.ingredientKey('성분나트륨 10mg'),m.ingredientKey('성분 10mg'));
+assert.notEqual(m.ingredientKey('성분A 10mg / 성분B 20mg'),m.ingredientKey('성분A 10mg'));
+assert.equal(m.match({ingredient:'',family:''},list).same.length,0);
+assert.equal(m.match({ingredient:'',family:''},list).related.length,0);
+console.log('PASS: PPI 3종, 에소메칸 포함, 동일 성분 우선, 함량 차이, 계열 검색, 염·복합제 구분');
