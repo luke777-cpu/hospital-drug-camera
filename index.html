@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+  <title>본원 대체약 카메라</title>
+</head>
+<body>
+<main>
+  <header><div class="logo">약</div><div><h1>본원 대체약 찾기</h1><p>사진 한 장으로 성분부터 확인합니다</p></div></header>
+
+  <section class="card" id="capture">
+    <span class="step">1 · 사진 입력</span>
+    <h2>처방 화면이나 약봉투를 촬영하세요</h2>
+    <label class="camera">
+      <input id="photo" type="file" accept="image/*" capture="environment">
+      <span>📷 카메라로 촬영</span>
+    </label>
+    <button class="secondary" id="gallery">사진첩에서 선택</button>
+    <p class="privacy">환자 이름·주민번호가 포함되면 판독 전에 사진을 잘라내세요.</p>
+    <div id="previewWrap" hidden>
+      <img id="preview" alt="촬영한 처방 사진">
+      <div class="row">
+        <button id="analyze">약 목록 읽기</button>
+        <button class="ghost" id="remove">다시 찍기</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="verify" hidden>
+    <span class="step">2 · 판독 확인</span>
+    <h2>읽힌 약을 확인하세요</h2>
+    <p class="help">틀린 이름이나 함량은 고친 뒤 결과를 확인하세요.</p>
+    <div id="recognized"></div>
+    <button id="match" disabled>본원 약 찾기</button>
+  </section>
+
+  <section id="results" hidden>
+    <div class="resultHead"><div><span class="step">3 · 결과</span><h2>본원 약 확인</h2></div><button class="ghost smallBtn" id="restart">새 사진</button></div>
+    <div id="resultList"></div>
+  </section>
+
+  <dialog id="settings">
+    <form method="dialog">
+      <h2>사진 판독 연결</h2>
+      <p>병원에서 승인한 판독 서버 주소를 입력합니다. 사진은 이 주소로만 전송됩니다.</p>
+      <label>판독 서버 주소<input id="endpoint" placeholder="예: https://병원서버/api/read-drugs"></label>
+      <div class="row"><button value="save" id="saveSettings">저장</button><button value="cancel" class="ghost">취소</button></div>
+    </form>
+  </dialog>
+</main>
+<footer><button class="link" id="openSettings">⚙ 사진 판독 연결</button><p>의료진 검토 보조용 · 최종 처방은 의료진이 결정합니다.</p></footer>
+<script src="app.js"></script>
+</body>
+</html>
