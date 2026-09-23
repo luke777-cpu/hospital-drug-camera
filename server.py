@@ -52,7 +52,7 @@ def generate(data,key):
     history,photos,_=base.validate(data)
     if len(photos)>1:raise ValueError('한 번에 사진 한 장씩 판독하세요.')
     catalog=[{k:d[k] for k in ['id','name','ingredient','strength','sheet','efficacy','family']} for d in CATALOG]
-    content=[{'type':'input_text','text':'본원 목록: '+json.dumps(catalog,ensure_ascii=False)+'\n입력 약 목록: '+history}]
+    content=[{'type':'input_text','text':'사진 또는 입력 약 목록을 판독하고 지정한 형식의 JSON 객체로만 응답하세요.\n본원 목록: '+json.dumps(catalog,ensure_ascii=False)+'\n입력 약 목록: '+history}]
     content.extend({'type':'input_image','image_url':p,'detail':'high'} for p in photos)
     payload={'model':base.MODEL,'store':False,'instructions':PROMPT,'input':[{'role':'user','content':content}],
              'max_output_tokens':9000,'text':{'format':{'type':'json_object'}}}
@@ -82,5 +82,5 @@ class Handler(base.Handler):
 base.Handler=Handler
 base.generate=generate
 if __name__=='__main__':
-    print('HOSPITAL DRUG CAMERA v2.2 JSON compatibility - Same ingredient first / same family fallback')
+    print('HOSPITAL DRUG CAMERA v2.3 JSON input fix - Same ingredient first / same family fallback')
     base.main()
