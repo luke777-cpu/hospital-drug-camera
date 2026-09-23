@@ -22,7 +22,7 @@ PROMPT='''응답은 반드시 JSON 객체 하나로 반환한다. 마크다운�
 ingredient는 성분명과 함량·단위를 포함한다. 상품명에서 성분을 추론했다면 notes에 반드시 "상품명 기반 성분 추정"이라고 써라.
 본원에 동일 성분이 있으면 본원 ingredient의 성분 표기를 사용하되 원래 읽은 함량은 strength에 유지하라. 함량이 달라도 동일 성분을 찾는다. 복합제는 전체 성분을 유지한다. 다른 염이나 다른 성분을 임의로 같은 것으로 바꾸지 마라.
 불확실하면 ingredient는 빈 문자열로 둬라. 약 이름이 비슷하다는 이유로 성분을 결정하지 마라.
-family는 약리 계열을 나타낸다. 본원 목록의 family 문자열 중 해당 계열을 선택한다. 예: PPI 약이면 성분이 본원에 없어도 family="PPI"를 반환한다. 본원에 같은 성분이 없다는 이유로 계열을 비우지 마라.
+발사르탄·텔미사르탄·칸데사르탄 같은 ARB 단일제는 family="안지오텐신Ⅱ수용체길항제"로 반환한다. 라베프라졸·오메프라졸·란소프라졸·에스오메프라졸·판토프라졸 단일제는 family="PPI"로 반환한다. ARB 복합제는 단일제 계열로 축약하지 않는다. 테고프라잔 등 P-CAB은 PPI로 분류하지 않는다.\nfamily는 약리 계열을 나타낸다. 본원 목록의 family 문자열 중 해당 계열을 선택한다. 예: PPI 약이면 성분이 본원에 없어도 family="PPI"를 반환한다. 본원에 같은 성분이 없다는 이유로 계열을 비우지 마라.
 이 작업은 환자별 처방 결정이 아니라 같은 성분/계열의 본원 약품 목록 조회다. 적응증·환자 상태 정보가 없어도 계열이 식별되면 family를 반환한다. 계열 자체를 알 수 없는 경우에만 빈 문자열로 둔다.
 진통제는 소염진통제(NSAIDs), 해열진통제(아세트아미노펜계), 트라마돌계 진통제, 마약성 진통제를 구분한다.
 같은 계열의 본원 약 목록은 프로그램이 전부 찾아 표시한다. alternatives는 빈 배열로 반환한다.
@@ -38,6 +38,9 @@ def clean_result(result):
     clean=[]
     for row in result['drugs']:
         if not isinstance(row,dict) or any(not isinstance(row.get(k),str) or len(row[k])>2000 for k in ['name','strength','ingredient','notes']):raise ValueError('약 판독 응답 형식 오류')
+        aliases={'ARB':'안지오텐신Ⅱ수용체길항제','ARBs':'안지오텐신Ⅱ수용체길항제','안지오텐신 수용체 차단제':'안지오텐신Ⅱ수용체길항제','양성자펌프억제제':'PPI','위산분비억제제(PPI)':'PPI'}
+        row=dict(row)
+        if isinstance(row.get('family'),str):row['family']=aliases.get(row['family'].strip(),row['family'].strip())
         if not isinstance(row.get('family'),str) or row['family'] not in ['']+FAMILY_NAMES:raise ValueError('계열 판독 형식 오류')
         alts=row.get('alternatives')
         if not isinstance(alts,list) or len(alts)>3:raise ValueError('대체 후보 형식 오류')
@@ -88,5 +91,5 @@ class Handler(base.Handler):
 base.Handler=Handler
 base.generate=generate
 if __name__=='__main__':
-    print('HOSPITAL DRUG CAMERA v2.4 compact request - Same ingredient first / same family fallback')
+    print('HOSPITAL DRUG CAMERA v2.5 automatic family matching - Same ingredient first / same family fallback')
     base.main()
