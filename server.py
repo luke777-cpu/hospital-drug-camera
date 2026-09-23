@@ -48,14 +48,20 @@ def clean_result(result):
         clean.append({**{k:row[k] for k in ['name','strength','ingredient','notes','family']},'alternatives':valid})
     return {'drugs':clean}
 
+def compact_catalog():
+    groups={}
+    for d in CATALOG:
+        groups.setdefault(d['family'],[]).append([d['name'],d['ingredient']])
+    return groups
+
 def generate(data,key):
     history,photos,_=base.validate(data)
     if len(photos)>1:raise ValueError('한 번에 사진 한 장씩 판독하세요.')
-    catalog=[{k:d[k] for k in ['id','name','ingredient','strength','sheet','efficacy','family']} for d in CATALOG]
-    content=[{'type':'input_text','text':'사진 또는 입력 약 목록을 판독하고 지정한 형식의 JSON 객체로만 응답하세요.\n본원 목록: '+json.dumps(catalog,ensure_ascii=False)+'\n입력 약 목록: '+history}]
+    catalog=compact_catalog()
+    content=[{'type':'input_text','text':'사진 또는 입력 약 목록을 판독하고 지정한 형식의 JSON 객체로만 응답하세요.\n본원 목록(객체 키=family, 각 행=[상품명, 성분]): '+json.dumps(catalog,ensure_ascii=False,separators=(',',':'))+'\n입력 약 목록: '+history}]
     content.extend({'type':'input_image','image_url':p,'detail':'high'} for p in photos)
     payload={'model':base.MODEL,'store':False,'instructions':PROMPT,'input':[{'role':'user','content':content}],
-             'max_output_tokens':9000,'text':{'format':{'type':'json_object'}}}
+             'max_output_tokens':3000,'text':{'format':{'type':'json_object'}}}
     req=Request('https://api.openai.com/v1/responses',data=json.dumps(payload).encode(),headers={'Authorization':'Bearer '+key,'Content-Type':'application/json'},method='POST')
     with urlopen(req,timeout=150) as r:response=json.load(r)
     if response.get('status')!='completed':raise ValueError('판독이 완료되지 않았습니다. 사진을 나누어 다시 시도하세요.')
@@ -82,5 +88,5 @@ class Handler(base.Handler):
 base.Handler=Handler
 base.generate=generate
 if __name__=='__main__':
-    print('HOSPITAL DRUG CAMERA v2.3 JSON input fix - Same ingredient first / same family fallback')
+    print('HOSPITAL DRUG CAMERA v2.4 compact request - Same ingredient first / same family fallback')
     base.main()
