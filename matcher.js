@@ -58,7 +58,8 @@
     const key=ingredientKey(row.ingredient);
     const same=key?list.filter(d=>d.ingredientKey&&d.ingredientKey===key):[];
     const group=same[0]?.family||inferFamily(row,list);
-    return {same,family:group,related:same.length?[]:list.filter(d=>group&&d.family===group)};
+    const broadOnly=['진통제','소화제','소화기약','항생제','혈압약','기타'].includes(group);
+    return {same,family:group,related:same.length||broadOnly?[]:list.filter(d=>group&&d.family===group)};
   }
   function search(q,list){
     const n=norm(q);if(!n)return [];

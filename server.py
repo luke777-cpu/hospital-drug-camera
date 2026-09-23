@@ -3,6 +3,7 @@ import json, re, sys, unicodedata
 from pathlib import Path
 from urllib.request import Request, urlopen
 import base_server as base
+import external_lookup
 
 ROOT=Path(__file__).resolve().parent
 DRUGS=json.loads((ROOT/'drugs.json').read_text(encoding='utf-8'))
@@ -58,6 +59,8 @@ def compact_catalog():
     return groups
 
 def generate(data,key):
+    if isinstance(data,dict) and data.get('operation')=='external_lookup':
+        return external_lookup.lookup(data,key,base.MODEL,CATALOG)
     history,photos,_=base.validate(data)
     if len(photos)>1:raise ValueError('한 번에 사진 한 장씩 판독하세요.')
     catalog=compact_catalog()
@@ -91,5 +94,5 @@ class Handler(base.Handler):
 base.Handler=Handler
 base.generate=generate
 if __name__=='__main__':
-    print('HOSPITAL DRUG CAMERA v2.5 automatic family matching - Same ingredient first / same family fallback')
+    print('HOSPITAL DRUG CAMERA v2.6 external drug lookup - Same ingredient first / same family fallback')
     base.main()
